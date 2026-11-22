@@ -28,3 +28,6 @@ Thumbs.db
 
 # logs
 *.log
+
+# runtime event log
+data/events.jsonl

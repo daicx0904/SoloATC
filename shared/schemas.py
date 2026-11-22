@@ -1,0 +1,63 @@
+"""跨模块共享的数据模型（Pydantic v2）。"""
+from __future__ import annotations
+
+from typing import Any
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
+
+
+class AircraftState(BaseModel):
+    """统一的标准化飞机状态。Core 只认此模型，不直接读 X-Plane DataRef。"""
+
+    callsign: str
+    latitude: float
+    longitude: float
+    altitude_msl_ft: float
+    indicated_altitude_ft: float
+    heading_deg: float
+    track_deg: float
+    groundspeed_kt: float
+    vertical_speed_fpm: float
+    on_ground: bool
+    gear_down: bool
+    flaps_ratio: float
+    timestamp: float
+    groundspeed_valid: bool = True
+
+
+class Clearance(BaseModel):
+    """结构化管制许可。"""
+
+    clearance_id: str
+    controller: str
+    callsign: str
+    clearance_type: str
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    valid_from: float
+    expires_at: float | None = None
+    status: str
+    source_rule: str | None = None
+
+
+class RuleResult(BaseModel):
+    """规则引擎统一结果。"""
+
+    accepted: bool
+    reason: str = ""
+    violated_rules: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class Event(BaseModel):
+    """领域事件。"""
+
+    event_id: str = Field(default_factory=lambda: uuid4().hex)
+    event_type: str
+    flight_id: str | None = None
+    ts_sim: float | None = None
+    ts_mono: float | None = None
+    source: str = ""
+    payload: dict[str, Any] = Field(default_factory=dict)
+    clearance_id: str | None = None
+    rule_version: str | None = None
