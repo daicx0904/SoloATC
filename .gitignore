@@ -31,3 +31,6 @@ Thumbs.db
 
 # runtime event log
 data/events.jsonl
+
+# pytest basetemp
+pytest-of-*/
