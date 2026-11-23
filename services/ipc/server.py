@@ -30,7 +30,7 @@ class IPCServer:
         self._handler = handler
 
     async def start(self) -> None:
-        self._server = await asyncio.start_server(self._handle_client, self.host, self.port)
+        self._server = await asyncio.start_server(self._handle_client, self.host, self.port, reuse_address=True)
 
     async def _handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         self._writers.add(writer)
@@ -66,9 +66,12 @@ class IPCServer:
                 logger.debug("广播到某客户端失败", exc_info=True)
 
     async def stop(self) -> None:
+        # 先关客户端连接（让 handler 的 readline() 收到 EOF 退出），再 wait_closed()；
+        # 否则客户端仍连着时 wait_closed() 会死等。
         if self._server is not None:
             self._server.close()
-            await self._server.wait_closed()
         for w in list(self._writers):
             w.close()
         self._writers.clear()
+        if self._server is not None:
+            await self._server.wait_closed()
