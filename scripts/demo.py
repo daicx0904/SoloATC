@@ -3,6 +3,7 @@
 运行：uv run python scripts/demo.py
 """
 import asyncio
+import os
 
 from adapters.mock.provider import MockAircraftStateProvider
 from core.service import CoreService
@@ -11,6 +12,8 @@ from services.ipc.reconnecting import ReconnectingClient
 
 async def main() -> None:
     store = "data/demo-events.jsonl"
+    if os.path.exists(store):
+        os.remove(store)  # 每次跑都从干净状态开始
     core = CoreService(event_store_path=store, host="127.0.0.1", port=4200)
     await core.start()
     print("[demo] Core 启动，端口 4200")
