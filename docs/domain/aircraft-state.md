@@ -2,22 +2,30 @@
 
 统一、标准化的飞机状态。Core 只能使用 AircraftState，**不得**直接读 X-Plane DataRef。
 
-## 字段（初版）
+## 单位分层（三层，务必区分）
+1. **原始层**：X-Plane DataRef 原生单位（米、米/秒等，混合）。
+2. **规范层（本模型）**：ATC 引擎统一使用 —— **高度=米(m)，水平速度=节(kt)**。
+3. **显示层**：按地区/Rule Profile 转换 —— 中国=米、km/h、km；美国=ft、kt、nm。
+
+- Bridge 的 collector 只做 ①→②。
+- 显示层（②→③）在 UI/表现层做，由 Rule Profile 驱动。
+
+## 字段（规范单位）
 ```python
 class AircraftState:
     callsign: str
     latitude: float
     longitude: float
-    altitude_msl_ft: float        # 气压高度(MSL)
-    indicated_altitude_ft: float  # 指示高度
-    heading_deg: float            # 机头航向
-    track_deg: float              # 航迹
-    groundspeed_kt: float
-    vertical_speed_fpm: float
+    altitude_msl_m: float        # 米（MSL 气压高度）
+    indicated_altitude_m: float  # 米（指示高度）
+    heading_deg: float
+    track_deg: float
+    groundspeed_kt: float        # 节
+    vertical_speed_fpm: float    # 暂定，中国 ATC 用 m/s，待定
     on_ground: bool
     gear_down: bool
     flaps_ratio: float
-    timestamp: float              # 采样时间
+    timestamp: float
     groundspeed_valid: bool
 ```
 
@@ -27,16 +35,13 @@ class AircraftState:
 - **Simulator Time vs System Time**：飞行逻辑用 sim time，网络/新鲜度用 monotonic time。
 
 ## 数据质量
-- **有效性**：DataRef 缺失/NaN → 字段标 invalid。
-- **新鲜度**：超过阈值未更新的状态标记 stale，规则引擎不得基于 stale 状态做决策。
-- **单位换算**：在 Bridge 侧统一换算到标准单位，Core 只认标准单位。
+- 有效性：DataRef 缺失/NaN → invalid。
+- 新鲜度：超阈值 stale，规则引擎不得基于 stale 状态决策。
+- 单位换算：Bridge 侧统一换算到规范单位。
 
 ## 异常场景
-- **模拟器暂停**：状态冻结，时间戳停更；恢复后继续。
-- **时间加速**：sim time 快进，需据此判断新鲜度与事件顺序。
-- **飞机重载**：Bridge 上报 reload，Core 丢弃旧状态。
-- **缺失 DataRef**：Bridge 标 invalid 并上报告警，不静默伪造。
+- 模拟器暂停 / 时间加速 / 飞机重载 / 缺失 DataRef（详见 spec §6.1）。
 
 ## 归属
-- 真实 X-Plane DataRef 采集在 `adapters/xplane`。
+- 真实 DataRef 采集在 `adapters/xplane`。
 - ToLiss 专用 DataRef 在 `adapters/aircraft/toliss`，不污染通用逻辑。
