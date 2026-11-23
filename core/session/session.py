@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from core.navigation.flight_plan import FlightPlan
 from shared.enums import FlightPhase
 
 
@@ -18,7 +19,7 @@ class FlightSession(BaseModel):
     departure: str          # ICAO
     destination: str        # ICAO
     phase: FlightPhase = FlightPhase.PREFLIGHT
-    flight_plan: dict | None = None   # 待 fms-parser 分支填充
+    flight_plan: FlightPlan | None = None
     created_at: float = Field(default_factory=time.time)
     updated_at: float = Field(default_factory=time.time)
 
