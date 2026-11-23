@@ -55,6 +55,7 @@ class CoreService:
 
     async def _on_message(self, msg: Message, writer) -> None:
         if msg.type == MessageType.HELLO:
+            logger.info("客户端接入: %s", msg.payload.get("client_type", "unknown"))
             await self.server.send(writer, Message(
                 id=uuid4().hex,
                 type=MessageType.WELCOME,
@@ -84,6 +85,7 @@ class CoreService:
                     },
                 ))
                 return
+            logger.debug("飞机状态: %s 高度 %.0f m 地速 %.0f kt", state.callsign, state.altitude_msl_m, state.groundspeed_kt)
             self._latest_state = state
             self._record(Event(
                 event_type=MessageType.AIRCRAFT_STATE_UPDATED.value,

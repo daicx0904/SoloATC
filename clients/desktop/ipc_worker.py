@@ -29,7 +29,10 @@ class IpcWorker(QObject):
         self._thread.start()
 
     def stop(self) -> None:
+        """请求停止：置位标志并等待线程退出（receive 每 1s 超时检查，最多约 1s 退出）。"""
         self._running = False
+        if self._thread is not None and self._thread.is_alive():
+            self._thread.join(timeout=3.0)
 
     def _run(self) -> None:
         loop = asyncio.new_event_loop()
@@ -54,7 +57,10 @@ class IpcWorker(QObject):
             summary = welcome.payload.get("state_summary", {})
             self.connection_changed.emit(True, f"事件数 {summary.get('event_count', 0)}")
             while self._running:
-                msg = await client.client.receive()
+                try:
+                    msg = await asyncio.wait_for(client.client.receive(), timeout=1.0)
+                except TimeoutError:
+                    continue  # 每 1s 醒来一次，重新检查 self._running
                 if msg is None:
                     break
                 if msg.type == MessageType.AIRCRAFT_STATE_UPDATED:
