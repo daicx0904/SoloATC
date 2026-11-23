@@ -47,7 +47,7 @@ class CoreService:
                 except ValidationError:
                     logger.warning("历史事件中的飞机状态无法解析，已跳过", exc_info=True)
 
-    def _snapshot(self) -> dict:
+    def state_summary(self) -> dict:
         return {
             "latest_state": self._latest_state.model_dump() if self._latest_state else None,
             "event_count": self._event_count,
@@ -59,7 +59,7 @@ class CoreService:
                 id=uuid4().hex,
                 type=MessageType.WELCOME,
                 ts_mono=time.monotonic(),
-                payload={"protocol_version": PROTOCOL_VERSION, "snapshot": self._snapshot()},
+                payload={"protocol_version": PROTOCOL_VERSION, "state_summary": self.state_summary()},
             ))
         elif msg.type == MessageType.HEARTBEAT:
             await self.server.send(writer, Message(

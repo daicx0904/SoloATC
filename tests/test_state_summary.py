@@ -1,4 +1,4 @@
-"""快照恢复测试（重连 / 重启）。"""
+"""状态摘要测试（重连 / 重启）。"""
 import asyncio
 import time
 from uuid import uuid4
@@ -10,7 +10,7 @@ from shared.enums import MessageType
 from tests._helpers import valid_state
 
 
-def test_snapshot_on_reconnect(tmp_path):
+def test_state_summary_on_reconnect(tmp_path):
     async def scenario():
         core = CoreService(event_store_path=tmp_path / "events.jsonl", host="127.0.0.1", port=0)
         await core.start()
@@ -19,28 +19,27 @@ def test_snapshot_on_reconnect(tmp_path):
         await c1.connect()
         await c1.send(Message(id="h1", type=MessageType.HELLO, payload={}))
         w1 = await c1.receive()
-        assert w1.payload["snapshot"]["latest_state"] is None
-        assert w1.payload["snapshot"]["event_count"] == 0
+        assert w1.payload["state_summary"]["latest_state"] is None
+        assert w1.payload["state_summary"]["event_count"] == 0
 
         await c1.send(Message(id=uuid4().hex, type=MessageType.AIRCRAFT_STATE_UPDATED,
                               ts_mono=time.monotonic(), payload={"state": valid_state().model_dump()}))
         await asyncio.sleep(0.2)
         await c1.close()
 
-        # 新连接拿快照
         c2 = IPCClient("127.0.0.1", core.server.bound_port)
         await c2.connect()
         await c2.send(Message(id="h2", type=MessageType.HELLO, payload={}))
         w2 = await c2.receive()
-        assert w2.payload["snapshot"]["latest_state"]["callsign"] == "CES1234"
-        assert w2.payload["snapshot"]["event_count"] == 1
+        assert w2.payload["state_summary"]["latest_state"]["callsign"] == "CES1234"
+        assert w2.payload["state_summary"]["event_count"] == 1
         await c2.close()
         await core.stop()
 
     asyncio.run(scenario())
 
 
-def test_snapshot_survives_restart(tmp_path):
+def test_state_summary_survives_restart(tmp_path):
     async def scenario():
         store_path = tmp_path / "events.jsonl"
 
@@ -56,15 +55,14 @@ def test_snapshot_survives_restart(tmp_path):
         await c1.close()
         await core.stop()
 
-        # 重启 Core（同一事件文件）
         core2 = CoreService(event_store_path=store_path, host="127.0.0.1", port=0)
         await core2.start()
         c2 = IPCClient("127.0.0.1", core2.server.bound_port)
         await c2.connect()
         await c2.send(Message(id="h2", type=MessageType.HELLO, payload={}))
         w2 = await c2.receive()
-        assert w2.payload["snapshot"]["latest_state"]["callsign"] == "CES1234"
-        assert w2.payload["snapshot"]["event_count"] == 1
+        assert w2.payload["state_summary"]["latest_state"]["callsign"] == "CES1234"
+        assert w2.payload["state_summary"]["event_count"] == 1
         await c2.close()
         await core2.stop()
 

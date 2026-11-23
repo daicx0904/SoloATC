@@ -8,17 +8,23 @@ from pydantic import BaseModel, Field
 
 
 class AircraftState(BaseModel):
-    """统一的标准化飞机状态。Core 只认此模型，不直接读 X-Plane DataRef。"""
+    """统一的标准化飞机状态。Core 只认此模型，不直接读 X-Plane DataRef。
+
+    规范单位（已定，避免后续返工）：
+    - 高度：米（m）；英尺（ft）作为派生显示字段后续再加
+    - 水平速度：节（kt）
+    - 垂直速度：米/秒（m/s）；fpm 派生字段后期加
+    """
 
     callsign: str
     latitude: float
     longitude: float
-    altitude_msl_ft: float
-    indicated_altitude_ft: float
+    altitude_msl_m: float
+    indicated_altitude_m: float
     heading_deg: float
     track_deg: float
     groundspeed_kt: float
-    vertical_speed_fpm: float
+    vertical_speed_mps: float  # 米/秒
     on_ground: bool
     gear_down: bool
     flaps_ratio: float
