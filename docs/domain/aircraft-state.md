@@ -21,7 +21,7 @@ class AircraftState:
     heading_deg: float
     track_deg: float
     groundspeed_kt: float        # 节
-    vertical_speed_fpm: float    # 暂定，中国 ATC 用 m/s，待定
+    vertical_speed_mps: float    # 米/秒（fpm 派生字段后期加）
     on_ground: bool
     gear_down: bool
     flaps_ratio: float

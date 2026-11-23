@@ -26,7 +26,7 @@ def test_core_records_aircraft_state(tmp_path):
             callsign="CES1234", latitude=40.0, longitude=116.0,
             altitude_msl_m=1000.0, indicated_altitude_m=1000.0,
             heading_deg=0.0, track_deg=0.0, groundspeed_kt=0.0,
-            vertical_speed_fpm=0.0, on_ground=True, gear_down=True,
+            vertical_speed_mps=0.0, on_ground=True, gear_down=True,
             flaps_ratio=0.0, timestamp=time.time(), groundspeed_valid=True,
         )
         await client.send(Message(

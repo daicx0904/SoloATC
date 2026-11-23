@@ -54,7 +54,7 @@ class MockAircraftStateProvider:
             heading_deg=0.0,
             track_deg=0.0,
             groundspeed_kt=0.0,
-            vertical_speed_fpm=0.0,
+            vertical_speed_mps=0.0,
             on_ground=self._alt <= 0.0,
             gear_down=True,
             flaps_ratio=0.0,

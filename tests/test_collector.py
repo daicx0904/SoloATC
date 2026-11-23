@@ -1,7 +1,7 @@
 """X-Plane collector 单元测试。"""
 import pytest
 
-from adapters.xplane.collector import FT_TO_M, MS_TO_KT, build_aircraft_state_dict
+from adapters.xplane.collector import FPM_TO_MPS, FT_TO_M, MS_TO_KT, build_aircraft_state_dict
 from shared.schemas import AircraftState
 
 
@@ -24,6 +24,7 @@ def test_unit_conversion():
     assert d["altitude_msl_m"] == pytest.approx(1000.0)                    # 米原样透传
     assert d["indicated_altitude_m"] == pytest.approx(3300.0 * FT_TO_M)    # ft -> m
     assert d["groundspeed_kt"] == pytest.approx(100.0 * MS_TO_KT)          # m/s -> kt
+    assert d["vertical_speed_mps"] == pytest.approx(-500.0 * FPM_TO_MPS)  # fpm -> m/s
     assert d["on_ground"] is False
     assert d["gear_down"] is True
     assert d["groundspeed_valid"] is True

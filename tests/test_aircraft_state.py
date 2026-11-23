@@ -10,7 +10,7 @@ def _state(**over) -> dict:
         "callsign": "CES1234", "latitude": 40.07, "longitude": 116.6,
         "altitude_msl_m": 10668.0, "indicated_altitude_m": 10668.0,
         "heading_deg": 90.0, "track_deg": 92.0, "groundspeed_kt": 450.0,
-        "vertical_speed_fpm": 0.0, "on_ground": False, "gear_down": False,
+        "vertical_speed_mps": 0.0, "on_ground": False, "gear_down": False,
         "flaps_ratio": 0.0, "timestamp": 123.4, "groundspeed_valid": True,
     }
     base.update(over)
